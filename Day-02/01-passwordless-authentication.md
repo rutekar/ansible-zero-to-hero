@@ -24,7 +24,9 @@ ssh-copy-id -f "-o IdentityFile <PATH TO PEM FILE>" ubuntu@<INSTANCE-PUBLIC-IP>
 - copy pem file of both master node and agent node on master node (here both agent node has same PEM file and master node has different PEM file)
   using below command from Downloads folder where PEM files downloaded
   - For master server key
-    `scp -i "masterNode.pem" masterNode.pem  ubuntu@ec2-3-25-163-73.ap-southeast-.compute.amazonaws.com:/home/ubuntu/keys`    (create keys folder on master server)
+    ```
+    scp -i "masterNode.pem" masterNode.pem  ubuntu@ec2-3-25-163-73.ap-southeast-.compute.amazonaws.com:/home/ubuntu/keys
+    ```   (create keys folder on master server)
 
   - For agent node key file copy to master node
     `scp -i "masterNode.pem" controlNode.pem  ubuntu@ec2-3-25-163-73.ap-southeast-.compute.amazonaws.com:/home/ubuntu/keys`
