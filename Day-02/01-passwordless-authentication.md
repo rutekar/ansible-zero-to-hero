@@ -44,3 +44,133 @@ ssh-copy-id -f "-o IdentityFile <PATH TO PEM FILE>" ubuntu@<INSTANCE-PUBLIC-IP>
  - After move public SSH key to agent node we can check the same in authorized_keys file on agent node
    `cat ~/.ssh/authorized_keys`
  - Do the same for other agent server also.
+
+
+
+### Deep Dive
+
+In your example, the **PEM file** is the AWS private key file used to prove you are allowed to log in to an EC2 instance.
+
+Example:
+
+```bash
+~/keys/controlNode.pem
+```
+
+This is a **private key**. It must stay secret.
+
+AWS put the matching **public key** on the EC2 instance when the instance was created. So SSH works like this:
+
+```text
+Your private key: ~/keys/controlNode.pem
+Remote instance has matching public key: ~/.ssh/authorized_keys
+```
+
+In your command:
+
+```bash
+ssh-copy-id -f "-o IdentityFile ~/keys/controlNode.pem" ubuntu@3.27.138.77
+```
+
+SSH does this:
+
+```text
+Master node uses ~/keys/controlNode.pem to log in to 3.27.138.77
+```
+
+If `3.27.138.77` accepts that PEM, login succeeds.
+
+Then `ssh-copy-id` copies the master node’s public key, usually:
+
+```bash
+/home/ubuntu/.ssh/id_ed25519.pub
+```
+
+into the agent node:
+
+```bash
+/home/ubuntu/.ssh/authorized_keys
+```
+
+After that, the master node can connect to the agent node using its own key pair:
+
+```text
+Master private key:
+ /home/ubuntu/.ssh/id_ed25519
+
+Agent authorized_keys contains:
+ /home/ubuntu/.ssh/id_ed25519.pub
+```
+
+So the flow is:
+
+```text
+Before ssh-copy-id:
+
+Master node
+  has PEM file: ~/keys/controlNode.pem
+  has Ansible SSH key: ~/.ssh/id_ed25519 and ~/.ssh/id_ed25519.pub
+
+Agent node 3.27.138.77
+  accepts AWS PEM's matching public key
+
+Master connects to Agent using PEM:
+  ssh -i ~/keys/controlNode.pem ubuntu@3.27.138.77
+
+
+During ssh-copy-id:
+
+Master logs into Agent using PEM
+Master copies ~/.ssh/id_ed25519.pub
+Agent saves it into ~/.ssh/authorized_keys
+
+
+After ssh-copy-id:
+
+Master can connect to Agent without PEM:
+  ssh ubuntu@3.27.138.77
+```
+
+Simple difference:
+
+```text
+PEM file
+```
+
+Temporary AWS access key used to enter the EC2 instance.
+
+```text
+~/.ssh/id_ed25519
+```
+
+Master node’s own private key used later by Ansible.
+
+```text
+~/.ssh/id_ed25519.pub
+```
+
+Master node’s public key copied to agent.
+
+```text
+agent ~/.ssh/authorized_keys
+```
+
+List of public keys allowed to log in to the agent.
+
+For Ansible, final desired connection is:
+
+```bash
+master node ---> agent node
+```
+
+using:
+
+```bash
+ssh ubuntu@3.27.138.77
+```
+
+without manually giving:
+
+```bash
+-i ~/keys/controlNode.pem
+```
