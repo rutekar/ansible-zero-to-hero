@@ -174,3 +174,40 @@ without manually giving:
 ```bash
 -i ~/keys/controlNode.pem
 ```
+
+
+### Summary
+Short flow:
+
+```text
+1. PEM file is AWS private key.
+   It is used to log in to an EC2 instance initially.
+
+2. Master node uses PEM to connect to agent node once:
+   ssh -i ~/keys/controlNode.pem ubuntu@3.27.138.77
+
+3. ssh-copy-id uses that PEM to log in,
+   then copies master node's public key to agent node.
+
+4. The copied key goes here on agent:
+   /home/ubuntu/.ssh/authorized_keys
+
+5. After that, master can SSH to agent without PEM:
+   ssh ubuntu@3.27.138.77
+
+6. Then Ansible can also connect from master to agent passwordlessly.
+```
+
+Command:
+
+```bash
+ssh-copy-id -f -i ~/.ssh/id_ed25519.pub -o IdentityFile=~/keys/controlNode.pem ubuntu@3.27.138.77
+```
+
+Meaning:
+
+```text
+Use PEM to enter agent once,
+copy master's public key to agent,
+then future SSH uses master's normal SSH key.
+```
