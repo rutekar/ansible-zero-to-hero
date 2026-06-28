@@ -92,3 +92,18 @@ if __name__ == '__main__':
 ```
 ansible-playbook -i inventory <Adhoc command or Playbook.yml>
 ```
+
+
+##Summary
+Create inventory.ini file on master node which contains the agent server details 
+```
+ubuntu@ip-172-31-11-161:~$ cat inventory.ini 
+ubuntu@18.183.154.52
+ubuntu@3.112.33.38
+
+```
+Then we can ping all the agents to test the connectivity fro amster to agents
+```
+ansible -i inventory.ini -m ping all
+```
+Result should give success
