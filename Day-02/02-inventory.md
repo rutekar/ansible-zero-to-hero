@@ -94,7 +94,7 @@ ansible-playbook -i inventory <Adhoc command or Playbook.yml>
 ```
 
 
-##Summary
+## Summary
 Create inventory.ini file on master node which contains the agent server details 
 ```
 ubuntu@ip-172-31-11-161:~$ cat inventory.ini 
